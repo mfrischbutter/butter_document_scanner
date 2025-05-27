@@ -4,6 +4,7 @@
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:html' as html show window;
 
+import 'package:flutter_doc_scanner/models/scanner_result.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
 import 'flutter_doc_scanner_platform_interface.dart';
@@ -25,14 +26,40 @@ class FlutterDocScannerWeb extends FlutterDocScannerPlatform {
   }
 
   @override
-  Future<String?> getScanDocuments([int page = 5]) async {
+  Future<ScannerResult> getScanDocuments([int page = 5, String? locale]) async {
+    // locale is unused in web implementation
     final data = html.window.navigator.userAgent;
-    return data;
+    return ScannerResult(imagePaths: [data]);
   }
 
   @override
-  Future<String?> getScanDocumentsUri([int page = 5]) async {
+  Future<ScannerResult> getScanDocumentsUri(
+      [int page = 5, String? locale]) async {
+    // locale is unused in web implementation
     final data = html.window.navigator.userAgent;
-    return data;
+    return ScannerResult(imagePaths: [data]);
   }
+
+  // TODO: Implement other methods from FlutterDocScannerPlatform for web if needed,
+  // or throw UnimplementedError.
+  // For example:
+  // @override
+  // Future<dynamic> getScannedDocumentAsImages([int page = 4, String? locale]) async {
+  //   throw UnimplementedError('getScannedDocumentAsImages() has not been implemented for web.');
+  // }
+  //
+  // @override
+  // Future<dynamic> getScannedDocumentAsPdf([int page = 4, String? locale]) async {
+  //   throw UnimplementedError('getScannedDocumentAsPdf() has not been implemented for web.');
+  // }
+  //
+  // @override
+  // Future<List<String>?> pickDocuments({String? locale, int? maxDocuments, List<String>? allowedTypeIdentifiers}) async {
+  //   throw UnimplementedError('pickDocuments() has not been implemented for web.');
+  // }
+  //
+  // @override
+  // Future<String?> pickImagesAndConvertToPdf({required int maxImages, String? locale}) async {
+  //   throw UnimplementedError('pickImagesAndConvertToPdf() has not been implemented for web.');
+  // }
 }

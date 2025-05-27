@@ -1,6 +1,7 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'flutter_doc_scanner_method_channel.dart';
+import 'models/scanner_result.dart';
 
 abstract class FlutterDocScannerPlatform extends PlatformInterface {
   /// Constructs a FlutterDocScannerPlatform.
@@ -27,19 +28,36 @@ abstract class FlutterDocScannerPlatform extends PlatformInterface {
     throw UnimplementedError('platformVersion() has not been implemented.');
   }
 
-  Future<dynamic> getScanDocuments([int page = 4]) {
-    throw UnimplementedError('ScanDocuments() has not been implemented.');
+  Future<ScannerResult> getScanDocuments([int page = 4, String? locale]) {
+    throw UnimplementedError('getScanDocuments() has not been implemented.');
   }
 
-  Future<dynamic> getScannedDocumentAsImages([int page = 4]) {
-    throw UnimplementedError('ScanDocuments() has not been implemented.');
+  Future<ScannerResult> getScannedDocumentAsImages(
+      [int page = 4, String? locale]) {
+    throw UnimplementedError(
+        'getScannedDocumentAsImages() has not been implemented.');
   }
 
-  Future<dynamic> getScannedDocumentAsPdf([int page = 4]) {
-    throw UnimplementedError('ScanDocuments() has not been implemented.');
+  Future<ScannerResult> getScannedDocumentAsPdf(
+      [int page = 4, String? locale]) {
+    throw UnimplementedError(
+        'getScannedDocumentAsPdf() has not been implemented.');
   }
 
-  Future<dynamic> getScanDocumentsUri([int page = 4]) {
-    throw UnimplementedError('ScanDocuments() has not been implemented.');
+  Future<ScannerResult> getScanDocumentsUri([int page = 4, String? locale]) {
+    throw UnimplementedError('getScanDocumentsUri() has not been implemented.');
+  }
+
+  Future<ScannerResult> pickDocuments(
+      {String? locale,
+      bool allowMultipleSelection = true,
+      List<String>? allowedTypeIdentifiers}) {
+    throw UnimplementedError('pickDocuments() has not been implemented.');
+  }
+
+  Future<ScannerResult> pickImagesAndConvertToPdf(
+      {required int maxImages, String? locale}) {
+    throw UnimplementedError(
+        'pickImagesAndConvertToPdf() has not been implemented.');
   }
 }
