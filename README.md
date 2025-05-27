@@ -1,3 +1,7 @@
+FORK
+
+Original: https://github.com/shirsh94/flutter_doc_scanner/
+
 # flutter_doc_scanner
 
 A Flutter plugin for document scanning on Android, iOS, and Web using ML Kit Document Scanner API and VisionKit.
@@ -9,15 +13,16 @@ A Flutter plugin for document scanning on Android, iOS, and Web using ML Kit Doc
 Check out the `example` directory for a sample Flutter app using `flutter_doc_scanner`.
 
 ## Document Scanner Demo
+
 <p align="center">
-	<img src="https://github.com/shirsh94/flutter_doc_scanner/blob/main/demo/doc_scan_demo.gif?raw=true" width="200"  />
+ <img src="https://github.com/shirsh94/flutter_doc_scanner/blob/main/demo/doc_scan_demo.gif?raw=true" width="200"  />
 </p>
 
 ## Screenshots
+
 | ![Screenshot 1](https://raw.githubusercontent.com/shirsh94/flutter_doc_scanner/main/demo/screen_shot_1.jpg?raw=true) | ![Screenshot 2](https://raw.githubusercontent.com/shirsh94/flutter_doc_scanner/main/demo/screen_shot_2.jpg?raw=true) | ![Screenshot 3](https://raw.githubusercontent.com/shirsh94/flutter_doc_scanner/main/demo/screen_shot_3.jpg?raw=true) |
 |----------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
 | ![Screenshot 4](https://raw.githubusercontent.com/shirsh94/flutter_doc_scanner/main/demo/screen_shot_4.jpg?raw=true) | ![Screenshot 5](https://raw.githubusercontent.com/shirsh94/flutter_doc_scanner/main/demo/screen_shot_5.jpg?raw=true) | ![Screenshot 6](https://raw.githubusercontent.com/shirsh94/flutter_doc_scanner/main/demo/screen_shot_6.jpg?raw=true) |
-
 
 ## Features
 
@@ -28,7 +33,6 @@ Check out the `example` directory for a sample Flutter app using `flutter_doc_sc
 - Support for sending digitized files in PDF and JPEG formats back to your app.
 - Ability to set a scan page limit.
 - Support for image(png,jpeg) format and PDF has been added through various methods.
-
 
 ## Installation
 
@@ -41,6 +45,7 @@ dependencies:
   flutter_doc_scanner: ^0.0.16
 
 ```
+
 Got it! Here's a more detailed explanation:
 
 ## Usage
@@ -60,15 +65,17 @@ Use the following function for document scanning on Android and iOS:
   print(scannedDocuments.toString());
 }
 ```
+
 **Note-: If you want to obtain only a PDF scanned document, call getScannedDocumentAsPdf(). Similarly, if you want to get a scanned document in image format, use getScannedDocumentAsImages().**
 
-
 ## Project Setup
+
 Follow the steps below to set up your Flutter project on Android, iOS, and Web.
 
 ### Android
 
 #### Minimum Version Configuration
+
 Ensure you meet the minimum version requirements to run the application on Android devices.
 In the `android/app/build.gradle` file, verify that `minSdkVersion` is at least 21. This setting specifies the minimum Android API level required to run your app, ensuring compatibility with a wide range of Android devices.
 
@@ -85,7 +92,9 @@ android {
 ```
 
 ### iOS
+
 #### Minimum Version Configuration
+
 Ensure you meet the minimum version requirements to run the application on iOS devices.
 In the `ios/Podfile` file, make sure the iOS platform version is at least 13.0. This setting specifies the minimum iOS version required to run your app, ensuring compatibility with a wide range of iOS devices.
 
@@ -94,6 +103,7 @@ platform :ios, '13.0'
 ```
 
 #### Permission Configuration
+
 1. Add a String property to the app's Info.plist file with the key `NSCameraUsageDescription` and the value as the description for why your app needs camera access. This step is required by Apple to explain to users why the app needs access to the camera, and it's crucial for App Store approval.
 
 ```ruby
@@ -132,6 +142,7 @@ platform :ios, '13.0'
    ```
 
 ### Web
+
 Currently, we have removed web support for this library. For document scanning on the web, you can use the following library: [flutter_doc_scanner_web](https://pub.dev/packages/flutter_doc_scanner_web).
 
 ## Issues and Feedback

@@ -1,4 +1,4 @@
-group 'com.shirsh.flutter_doc_scanner'
+group 'com.frischbutter.butter_document_scanner'
 version '1.0-SNAPSHOT'
 
 buildscript {
@@ -28,7 +28,7 @@ apply plugin: 'kotlin-android'
 
 android {
     if (project.android.hasProperty("namespace")) {
-        namespace 'com.shirsh.flutter_doc_scanner'
+        namespace 'com.frischbutter.butter_document_scanner'
     }
 
     compileSdk 34

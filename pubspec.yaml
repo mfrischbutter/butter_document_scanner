@@ -1,5 +1,5 @@
 name: butter_document_scanner
-description: "A Flutter plugin for document scanning on Android and iOS using ML Kit Document Scanner API and VisionKit."
+description: "FORK from https://github.com/shirsh94/flutter_doc_scanner/"
 version: 0.0.16
 homepage: https://github.com/shirsh94/flutter_doc_scanner/
 
@@ -37,7 +37,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.shirsh.flutter_doc_scanner
+        package: com.frischbutter.butter_document_scanner
         pluginClass: FlutterDocScannerPlugin
       ios:
         pluginClass: SwiftFlutterDocScannerPlugin

@@ -1,4 +1,4 @@
-package com.shirsh.flutter_doc_scanner
+package com.frischbutter.butter_document_scanner
 
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
