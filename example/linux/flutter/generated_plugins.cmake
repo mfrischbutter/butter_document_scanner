@@ -3,7 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  flutter_doc_scanner
+  butter_document_scanner
   open_file_linux
 )
 

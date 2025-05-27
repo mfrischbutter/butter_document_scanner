@@ -5,7 +5,7 @@
 import FlutterMacOS
 import Foundation
 
-import flutter_doc_scanner
+import butter_document_scanner
 import open_file_mac
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {

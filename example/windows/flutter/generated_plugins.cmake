@@ -3,7 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  flutter_doc_scanner
+  butter_document_scanner
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST

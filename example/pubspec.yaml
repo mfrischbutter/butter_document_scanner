@@ -19,7 +19,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  flutter_doc_scanner:
+  butter_document_scanner:
     # When depending on this package from a real application you should use:
     #   flutter_doc_scanner: ^x.y.z
     # See https://dart.dev/tools/pub/dependencies#version-constraints
