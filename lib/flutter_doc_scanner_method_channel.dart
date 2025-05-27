@@ -41,39 +41,74 @@ class MethodChannelFlutterDocScanner extends FlutterDocScannerPlatform {
   @override
   Future<ScannerResult> getScannedDocumentAsImages(
       [int page = 1, String? locale]) async {
-    final dynamic dataList = await methodChannel.invokeMethod<dynamic>(
+    final dynamic data = await methodChannel.invokeMethod<dynamic>(
       'getScannedDocumentAsImages',
       {'page': page, 'locale': locale},
     );
-    if (dataList is List) {
-      return ScannerResult(imagePaths: dataList.cast<String>().toList());
+    if (data is Map) {
+      final List<dynamic>? imagePathsDynamic =
+          data['imagePaths'] as List<dynamic>?;
+      if (imagePathsDynamic != null) {
+        return ScannerResult(
+            imagePaths: imagePathsDynamic.cast<String>().toList());
+      }
+    } else if (data is List) {
+      // Fallback for very old behavior or direct list return (less likely now)
+      print(
+          "flutter_doc_scanner: Warning - getScannedDocumentAsImages received a direct List. Expected a Map.");
+      return ScannerResult(imagePaths: data.cast<String>().toList());
     }
+    print(
+        "flutter_doc_scanner: Unexpected data type or missing 'imagePaths' from getScannedDocumentAsImages: ${data?.runtimeType}");
     return ScannerResult();
   }
 
   @override
   Future<ScannerResult> getScannedDocumentAsPdf(
       [int page = 1, String? locale]) async {
-    final dynamic pdfPath = await methodChannel.invokeMethod<dynamic>(
+    final dynamic data = await methodChannel.invokeMethod<dynamic>(
       'getScannedDocumentAsPdf',
       {'page': page, 'locale': locale},
     );
-    if (pdfPath is String) {
-      return ScannerResult(pdfPath: pdfPath);
+    if (data is Map) {
+      // iOS returns a map like FlutterScannerResult.toDictionary(),
+      // which might contain pdfPath directly.
+      // Android returns a map like {"pdfUri": "...", "pageCount": ...}
+      if (data.containsKey('pdfPath') && data['pdfPath'] is String) {
+        return ScannerResult(pdfPath: data['pdfPath'] as String);
+      } else {
+        // Assume it's an Android-style result or an iOS result without a direct pdfPath
+        // but other potentially useful info.
+        return ScannerResult(
+            androidScanResult: Map<String, dynamic>.from(data));
+      }
+    } else if (data is String) {
+      // Fallback for older behavior or if a direct path string is somehow returned
+      return ScannerResult(pdfPath: data);
     }
+    print(
+        "flutter_doc_scanner: Unexpected data type from getScannedDocumentAsPdf: ${data?.runtimeType}");
     return ScannerResult();
   }
 
   @override
   Future<ScannerResult> getScanDocumentsUri(
       [int page = 1, String? locale]) async {
-    final dynamic pdfUri = await methodChannel.invokeMethod<dynamic>(
+    final dynamic data = await methodChannel.invokeMethod<dynamic>(
       'getScanDocumentsUri',
       {'page': page, 'locale': locale},
     );
-    if (pdfUri is String) {
-      return ScannerResult(pdfPath: pdfUri);
+    if (data is Map) {
+      // Android returns a map {"pdfUri": "...", "pageCount": ...}
+      // iOS does not have a direct equivalent for "getScanDocumentsUri",
+      // but if it were to return something, it would likely be a map.
+      return ScannerResult(androidScanResult: Map<String, dynamic>.from(data));
+    } else if (data is String) {
+      // Unlikely, but handle for robustness
+      return ScannerResult(pdfPath: data);
     }
+    print(
+        "flutter_doc_scanner: Unexpected data type from getScanDocumentsUri: ${data?.runtimeType}");
     return ScannerResult();
   }
 

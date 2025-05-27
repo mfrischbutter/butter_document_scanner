@@ -32,6 +32,18 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.pdf.PdfDocument
+import android.net.Uri
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import android.os.Build
+import android.provider.MediaStore
 
 class FlutterDocScannerPlugin : MethodCallHandler, ActivityResultListener,
     FlutterPlugin, ActivityAware {
@@ -47,7 +59,9 @@ class FlutterDocScannerPlugin : MethodCallHandler, ActivityResultListener,
     private val REQUEST_CODE_SCAN_IMAGES = 215512
     private val REQUEST_CODE_SCAN_PDF = 216612
     private val REQUEST_CODE_PICK_DOCUMENTS = 217712
+    private val REQUEST_CODE_PICK_IMAGES_FOR_PDF = 218812
     private lateinit var resultChannel: MethodChannel.Result
+    private var currentMaxImages: Int = 0 // To store maxImages for onActivityResult
 
 
     override fun onMethodCall(call: MethodCall, result: Result) {
@@ -82,9 +96,9 @@ class FlutterDocScannerPlugin : MethodCallHandler, ActivityResultListener,
                 startPickDocuments(allowedTypeIdentifiers, allowMultipleSelection)
             }
             "pickImagesAndConvertToPdf" -> {
-                val maxImages = call.argument<Int>("maxImages") ?: 1
-                Log.d(TAG, "maxImages: $maxImages for pickImagesAndConvertToPdf (Android - Not Implemented)")
-                result.notImplemented()
+                currentMaxImages = call.argument<Int>("maxImages") ?: 0 
+                Log.d(TAG, "maxImages: $currentMaxImages for pickImagesAndConvertToPdf")
+                startPickImagesForPdf(currentMaxImages)
             }
             else -> {
                 result.notImplemented()
@@ -160,6 +174,34 @@ class FlutterDocScannerPlugin : MethodCallHandler, ActivityResultListener,
         } ?: resultChannel.error("ACTIVITY_UNAVAILABLE", "Activity is not available to pick documents.", null)
     }
 
+    private fun startPickImagesForPdf(maxImages: Int) {
+        val intent: Intent
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && maxImages > 0) {
+            Log.d(TAG, "Using MediaStore.ACTION_PICK_IMAGES with maxImages: $maxImages")
+            intent = Intent(MediaStore.ACTION_PICK_IMAGES).apply {
+                type = "image/*"
+                if (maxImages > 0) {
+                    putExtra(MediaStore.EXTRA_PICK_IMAGES_MAX, maxImages)
+                }
+            }
+        } else {
+            Log.d(TAG, "Using Intent.ACTION_GET_CONTENT. Max images ($maxImages) will be enforced post-selection if > 0.")
+            intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                type = "image/*"
+                putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+            }
+        }
+
+        activity?.let {
+            try {
+                startActivityForResult(it, intent, REQUEST_CODE_PICK_IMAGES_FOR_PDF, null)
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to start image picker for PDF conversion", e)
+                resultChannel.error("PICKER_FAILED", "Failed to start image picker activity.", e.localizedMessage)
+            }
+        } ?: resultChannel.error("ACTIVITY_UNAVAILABLE", "Activity is not available to pick images.", null)
+    }
+
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
         if (resultCode == Activity.RESULT_OK) {
@@ -180,12 +222,14 @@ class FlutterDocScannerPlugin : MethodCallHandler, ActivityResultListener,
                 }
                 REQUEST_CODE_SCAN_PDF -> {
                     resultData?.getPdf()?.let {
-                        resultChannel.success(mapOf("pdfPath" to it.uri.toString()))
+                        val resultMap = mapOf("pdfUri" to it.uri.toString(), "pageCount" to it.pageCount)
+                        resultChannel.success(resultMap)
                     } ?: resultChannel.success(null)
                 }
                 REQUEST_CODE_SCAN_URI -> {
                     resultData?.getPdf()?.let {
-                        resultChannel.success(mapOf("pdfPath" to it.uri.toString()))
+                        val resultMap = mapOf("pdfUri" to it.uri.toString(), "pageCount" to it.pageCount)
+                        resultChannel.success(resultMap)
                     } ?: resultChannel.success(null)
                 }
                 REQUEST_CODE_PICK_DOCUMENTS -> {
@@ -198,6 +242,39 @@ class FlutterDocScannerPlugin : MethodCallHandler, ActivityResultListener,
                         uris.add(uri.toString())
                     }
                     resultChannel.success(if (uris.isNotEmpty()) mapOf("pickedFilePaths" to uris) else null)
+                }
+                REQUEST_CODE_PICK_IMAGES_FOR_PDF -> {
+                    val imageUris = mutableListOf<Uri>()
+                    data?.clipData?.let { clipData ->
+                        for (i in 0 until clipData.itemCount) {
+                            imageUris.add(clipData.getItemAt(i).uri)
+                        }
+                    } ?: data?.data?.let { uri ->
+                        imageUris.add(uri)
+                    }
+
+                    if (imageUris.isEmpty()) {
+                        resultChannel.success(null)
+                        return true
+                    }
+
+                    val selectedImageUris = if (currentMaxImages > 0 && imageUris.size > currentMaxImages) {
+                        imageUris.take(currentMaxImages)
+                    } else {
+                        imageUris
+                    }
+
+                    try {
+                        val pdfPath = convertImageUrisToPdf(selectedImageUris)
+                        if (pdfPath != null) {
+                            resultChannel.success(mapOf("pdfPath" to pdfPath))
+                        } else {
+                            resultChannel.error("PDF_CONVERSION_FAILED", "Could not convert images to PDF.", null)
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error converting images to PDF", e)
+                        resultChannel.error("PDF_CONVERSION_ERROR", "Error during PDF conversion: ${e.localizedMessage}", null)
+                    }
                 }
                 else -> return false
             }
@@ -213,12 +290,14 @@ class FlutterDocScannerPlugin : MethodCallHandler, ActivityResultListener,
         pluginBinding = binding
         channel = MethodChannel(binding.binaryMessenger, "flutter_doc_scanner")
         channel!!.setMethodCallHandler(this)
+        applicationContext = binding.applicationContext as Application
     }
 
     override fun onDetachedFromEngine(binding: FlutterPluginBinding) {
         pluginBinding = null
         channel?.setMethodCallHandler(null)
         channel = null
+        applicationContext = null
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
@@ -239,5 +318,53 @@ class FlutterDocScannerPlugin : MethodCallHandler, ActivityResultListener,
         activityBinding?.removeActivityResultListener(this)
         activityBinding = null
         activity = null
+    }
+
+    private fun convertImageUrisToPdf(imageUris: List<Uri>): String? {
+        if (applicationContext == null) {
+            Log.e(TAG, "Application context is null, cannot convert to PDF")
+            return null
+        }
+        val pdfDocument = PdfDocument()
+        try {
+            for (imageUri in imageUris) {
+                applicationContext!!.contentResolver.openInputStream(imageUri)?.use { inputStream ->
+                    val bitmap = BitmapFactory.decodeStream(inputStream)
+                    if (bitmap != null) {
+                        val pageInfo = PdfDocument.PageInfo.Builder(bitmap.width, bitmap.height, pdfDocument.pages.size + 1).create()
+                        val page = pdfDocument.startPage(pageInfo)
+                        val canvas = page.canvas
+                        canvas.drawBitmap(bitmap, 0f, 0f, null)
+                        pdfDocument.finishPage(page)
+                        bitmap.recycle() // Recycle bitmap to free memory
+                    } else {
+                        Log.e(TAG, "Failed to decode bitmap from URI: $imageUri")
+                    }
+                }
+            }
+
+            if (pdfDocument.pages.isEmpty()) {
+                 Log.w(TAG, "No images were successfully converted to PDF pages.")
+                return null
+            }
+
+            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            val fileName = "images_to_pdf_$timeStamp.pdf"
+            val cacheDir = applicationContext!!.cacheDir
+            val pdfFile = File(cacheDir, fileName)
+
+            FileOutputStream(pdfFile).use { outputStream ->
+                pdfDocument.writeTo(outputStream)
+            }
+            return pdfFile.absolutePath
+        } catch (e: IOException) {
+            Log.e(TAG, "IOException during PDF conversion", e)
+            return null
+        } catch (e: Exception) {
+            Log.e(TAG, "Generic exception during PDF conversion", e)
+            return null
+        } finally {
+            pdfDocument.close()
+        }
     }
 }

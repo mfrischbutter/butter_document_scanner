@@ -135,12 +135,11 @@ class _ScanPageState extends State<ScanPage> {
         allowedTypeIdentifiers: [
           // Example UTIs for iOS:
           'com.adobe.pdf', // PDF
-          'public.image', // All image types
           // 'public.text',     // Plain text
           // 'com.microsoft.word.doc', // Older Word doc
           // 'org.openxmlformats.wordprocessingml.document' // Newer Word docx
           // Example MIME types for Android (use if targeting Android specifically):
-          // 'application/pdf',
+          'application/pdf',
           // 'image/*',
           // 'text/plain'
         ],
@@ -154,10 +153,12 @@ class _ScanPageState extends State<ScanPage> {
   }
 
   Future<void> pickImagesAndConvertToPdf() async {
-    const String action = "Pick Images & Convert to PDF (iOS)";
+    const String action = "Pick Images & Convert to PDF";
     try {
-      final result =
-          await FlutterDocScanner().pickImagesAndConvertToPdf(maxImages: 3);
+      final result = await FlutterDocScanner().pickImagesAndConvertToPdf(
+        maxImages: 5,
+        // locale: 'fr-FR'
+      );
       await _updateResult(result, action);
     } on PlatformException catch (e) {
       await _handlePlatformException(e, action);
@@ -316,15 +317,20 @@ class _ScanPageState extends State<ScanPage> {
               flex: 2,
               child: ListView(
                 children: <Widget>[
+                  _buildGroupTitle(context, "Document Scanning Actions"),
                   _buildButton("Scan Documents (Default)", scanDocument),
                   _buildButton("Scan as Images", scanDocumentAsImages),
                   _buildButton("Scan as PDF", scanDocumentAsPdf),
                   _buildButton("Scan Document URI (Android)", scanDocumentUri),
+                  const SizedBox(height: 16),
+                  _buildGroupTitle(context, "File Picking Actions"),
                   _buildButton("Pick Single Document",
                       () => pickDocuments(allowMultiple: false)),
                   _buildButton("Pick Multiple Documents",
                       () => pickDocuments(allowMultiple: true)),
-                  _buildButton("Pick Images & Convert to PDF (iOS)",
+                  const SizedBox(height: 16),
+                  _buildGroupTitle(context, "Image Utility Actions"),
+                  _buildButton("Pick Images & Convert to PDF",
                       pickImagesAndConvertToPdf),
                 ],
               ),
@@ -334,4 +340,18 @@ class _ScanPageState extends State<ScanPage> {
       ),
     );
   }
+}
+
+Widget _buildGroupTitle(BuildContext context, String title) {
+  return Padding(
+    padding:
+        const EdgeInsets.only(top: 8.0, bottom: 4.0, left: 4.0, right: 4.0),
+    child: Text(
+      title,
+      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            color: Colors.teal.shade700,
+            fontWeight: FontWeight.w600,
+          ),
+    ),
+  );
 }
