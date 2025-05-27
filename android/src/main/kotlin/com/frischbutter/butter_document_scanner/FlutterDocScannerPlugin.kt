@@ -44,6 +44,7 @@ import java.util.Date
 import java.util.Locale
 import android.os.Build
 import android.provider.MediaStore
+import android.provider.OpenableColumns
 
 class FlutterDocScannerPlugin : MethodCallHandler, ActivityResultListener,
     FlutterPlugin, ActivityAware {
@@ -233,15 +234,27 @@ class FlutterDocScannerPlugin : MethodCallHandler, ActivityResultListener,
                     } ?: resultChannel.success(null)
                 }
                 REQUEST_CODE_PICK_DOCUMENTS -> {
-                    val uris = mutableListOf<String>()
+                    val uris = mutableListOf<Uri>()
                     data?.clipData?.let { clipData ->
                         for (i in 0 until clipData.itemCount) {
-                            uris.add(clipData.getItemAt(i).uri.toString())
+                            uris.add(clipData.getItemAt(i).uri)
                         }
                     } ?: data?.data?.let { uri ->
-                        uris.add(uri.toString())
+                        uris.add(uri)
                     }
-                    resultChannel.success(if (uris.isNotEmpty()) mapOf("pickedFilePaths" to uris) else null)
+
+                    if (uris.isEmpty()) {
+                        resultChannel.success(null)
+                        return true
+                    }
+
+                    val filePaths = mutableListOf<String>()
+                    for (uri in uris) {
+                        copyContentUriToCache(uri)?.let { filePath ->
+                            filePaths.add(filePath)
+                        }
+                    }
+                    resultChannel.success(if (filePaths.isNotEmpty()) mapOf("pickedFilePaths" to filePaths) else null)
                 }
                 REQUEST_CODE_PICK_IMAGES_FOR_PDF -> {
                     val imageUris = mutableListOf<Uri>()
@@ -318,6 +331,42 @@ class FlutterDocScannerPlugin : MethodCallHandler, ActivityResultListener,
         activityBinding?.removeActivityResultListener(this)
         activityBinding = null
         activity = null
+    }
+
+    private fun copyContentUriToCache(uri: Uri): String? {
+        if (applicationContext == null || activity == null) {
+            Log.e(TAG, "Context or activity is null, cannot copy URI to cache.")
+            return null
+        }
+        val contentResolver = activity!!.contentResolver
+        var fileName = "temp_document"
+        // Try to get the original file name
+        contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (nameIndex != -1) {
+                    fileName = cursor.getString(nameIndex)
+                }
+            }
+        }
+
+        val cacheDir = applicationContext!!.cacheDir
+        val tempFile = File(cacheDir, fileName)
+
+        try {
+            contentResolver.openInputStream(uri)?.use { inputStream ->
+                FileOutputStream(tempFile).use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+            return tempFile.absolutePath
+        } catch (e: IOException) {
+            Log.e(TAG, "IOException during URI copy to cache for $uri", e)
+            return null
+        } catch (e: Exception) {
+            Log.e(TAG, "Generic exception during URI copy to cache for $uri", e)
+            return null
+        }
     }
 
     private fun convertImageUrisToPdf(imageUris: List<Uri>): String? {
