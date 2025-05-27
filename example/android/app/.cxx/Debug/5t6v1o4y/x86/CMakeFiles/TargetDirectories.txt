@@ -1,0 +1,2 @@
+/Users/michael.frischbutter/Documents/dev/butter_document_scanner/example/android/app/.cxx/Debug/5t6v1o4y/x86/CMakeFiles/edit_cache.dir
+/Users/michael.frischbutter/Documents/dev/butter_document_scanner/example/android/app/.cxx/Debug/5t6v1o4y/x86/CMakeFiles/rebuild_cache.dir
