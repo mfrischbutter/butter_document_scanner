@@ -1,7 +1,7 @@
-import 'package:flutter_doc_scanner/flutter_doc_scanner.dart';
-import 'package:flutter_doc_scanner/flutter_doc_scanner_method_channel.dart';
-import 'package:flutter_doc_scanner/flutter_doc_scanner_platform_interface.dart';
-import 'package:flutter_doc_scanner/models/scanner_result.dart';
+import 'package:butter_document_scanner/flutter_doc_scanner.dart';
+import 'package:butter_document_scanner/flutter_doc_scanner_method_channel.dart';
+import 'package:butter_document_scanner/flutter_doc_scanner_platform_interface.dart';
+import 'package:butter_document_scanner/models/scanner_result.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 

@@ -1,6 +1,6 @@
+import 'package:butter_document_scanner/flutter_doc_scanner_method_channel.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_doc_scanner/flutter_doc_scanner_method_channel.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

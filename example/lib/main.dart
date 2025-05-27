@@ -1,7 +1,7 @@
+import 'package:butter_document_scanner/flutter_doc_scanner.dart';
+import 'package:butter_document_scanner/models/scanner_result.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_doc_scanner/flutter_doc_scanner.dart';
-import 'package:flutter_doc_scanner/models/scanner_result.dart';
 import 'package:open_file/open_file.dart';
 
 void main() {

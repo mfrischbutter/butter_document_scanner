@@ -6,10 +6,9 @@
 // For more information about Flutter integration tests, please see
 // https://docs.flutter.dev/cookbook/testing/integration/introduction
 
+import 'package:butter_document_scanner/flutter_doc_scanner.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-
-import 'package:flutter_doc_scanner/flutter_doc_scanner.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();

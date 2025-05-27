@@ -4,7 +4,7 @@
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:html' as html show window;
 
-import 'package:flutter_doc_scanner/models/scanner_result.dart';
+import 'package:butter_document_scanner/models/scanner_result.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
 import 'flutter_doc_scanner_platform_interface.dart';
